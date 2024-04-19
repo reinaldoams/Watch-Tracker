@@ -1,9 +1,9 @@
-import Image from "next/image";
-import Search from "./Components/Search";
+import MediaList from "./Components/MediaList";
 
 export default function Home() {
   return (
     <>
+      <MediaList />
     </>
   );
 }

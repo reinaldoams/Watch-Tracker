@@ -1,0 +1,113 @@
+'use client'
+import { initializeSupabase } from '@/supabase/init'
+import Link from 'next/link'
+import React, { useEffect, useState } from 'react'
+import { useForm, SubmitHandler } from "react-hook-form"
+import { useAuth } from '../Context/auth'
+import { redirect, useSearchParams } from 'next/navigation'
+
+type LoginInputs = {
+    title: string
+    type: 'movie' | 'series' | 'book'
+}
+
+export default function Create() {
+    const [formError, setFormError] = useState<false | string>(false)
+    const [messageSuccess, setMessageSuccess] = useState(false)
+
+    const { } = useAuth()
+
+    const {
+        register,
+        handleSubmit,
+        watch,
+        formState: { errors },
+    } = useForm<LoginInputs>()
+
+    const onSubmit: SubmitHandler<LoginInputs> = async submitHandlerData => {
+        const supabase = initializeSupabase()
+
+        if (!supabase) {
+            setFormError('Error connecting to server')
+            return
+        }
+
+        console.log('submitHandlerData', submitHandlerData)
+        return
+
+        const { error } = await supabase
+            .from('countries')
+            .insert({ id: 1, name: 'Denmark' })
+
+        if (error) {
+            setFormError(error.message)
+            console.error(error.message)
+        } else {
+            setMessageSuccess(true)
+        }
+    }
+
+    return (
+        <div className="max-w-xl container mx-auto ">
+            <div className=" w-full">
+                <p className="text-center text-neutral-600 text-base font-semibold text-white">Track a new media</p>
+                <div className="mt-10">
+                    <form className="px-10" onSubmit={handleSubmit(onSubmit)}>
+                        <div className="mt-2">
+                            <div className="flex my-3 items-center justify-between bg-zinc-100 rounded-lg  ">
+                                <input type="text" placeholder="Title" id="titleInput"
+                                    className="w-full text-neutral-600 placeholder:text-neutral-600 p-4 bg-transparent outline-none"
+                                    {...register("title", { required: 'Please provide an title' })}
+                                />
+                            </div>
+                        </div>
+                        <div className="mt-6">
+                            <h3>Please select a type</h3>
+                            <div>
+                                <label htmlFor="movieRadioButton">
+                                    <input type="radio" aria-label="Movie" placeholder="Type" id="movieRadioButton" value="movie"
+                                        className="text-neutral-600 placeholder:text-neutral-600 p-4 bg-transparent outline-none"
+                                        {...register("type", { required: 'Please provide a type' })}
+                                    />
+                                    Movie
+                                </label>
+                            </div>
+                            <div>
+                                <label htmlFor="seriesRadioButton">
+                                    <input type="radio" aria-label="Series" placeholder="Type" id="seriesRadioButton" value="series"
+                                        className="text-neutral-600 placeholder:text-neutral-600 p-4 bg-transparent outline-none"
+                                        {...register("type", { required: 'Please provide a type' })}
+                                    />
+                                    TV Series
+                                </label>
+                            </div>
+                            <div>
+                                <label htmlFor="bookRadioButton">
+                                    <input type="radio" aria-label="Book" placeholder="Type" id="bookRadioButton" value="book"
+                                        className="text-neutral-600 placeholder:text-neutral-600 p-4 bg-transparent outline-none"
+                                        {...register("type", { required: 'Please provide a type' })}
+                                    />
+                                    Book
+                                </label>
+                            </div>
+                            {formError ? <p className='text-red-500'>{formError}</p> : <></>}
+                        </div>
+                        <button
+                            className="bg-indigo-900 rounded-lg shadow text-center text-white text-base font-semibold w-full py-3 mt-9">Create new media</button>
+
+                    </form>
+                    <div className="relative flex items-center mt-8">
+                        <div className="border h-0 w-2/4 border-stone-300"></div>
+                        <div className=" text-stone-300 px-4 text-sm font-normal">OR</div>
+                        <div className=" border h-0 w-2/4 border-stone-300"></div>
+                    </div>
+                    <Link href="/signup">
+                        <button
+                            className="border border-indigo-900 rounded-lg text-center text-indigo-900 bg-white text-base font-semibold w-full py-3 mt-9">Doesn't have an account? Signup
+                            now</button>
+                    </Link>
+                </div>
+            </div>
+        </div>
+    )
+}

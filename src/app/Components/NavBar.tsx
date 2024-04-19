@@ -21,7 +21,14 @@ export default function NavBar() {
             </Link>
           </span>
           <span className="pt-1 text-white text-[0.95rem] font-medium">
-            Track your media
+            Tracking your media
+          </span>
+        </div>
+        <div className="flex flex-col flex-wrap justify-center mb-5 mr-3 lg:mb-0">
+          <span className="my-0 flex text-white font-semibold text-[1.35rem]/[1.2] flex-col justify-center">
+            <Link href="/create">
+              Track a new media
+            </Link>
           </span>
         </div>
         <h1 className="text-2xl mb-5 mr-3 lg:mb-0">{firstName ? `Welcome, ${firstName}` : 'Welcome!'}</h1>

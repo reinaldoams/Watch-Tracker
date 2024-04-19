@@ -27,14 +27,13 @@ export default function Login() {
     const supabase = initializeSupabase()
     if (!supabase) return
     const { data: { user } } = await supabase.auth.getUser()
-    console.log('user fetched', user)
     const identityData = user?.identities?.[0]?.identity_data
     if (identityData) {
       setEmail(identityData.email)
       setFirstName(identityData.firstName)
       setLastName(identityData.lastName)
     }
-    // redirect('/')
+    redirect('/')
   }
   if (accessTokenParam) asyncLoginFunction()
 
@@ -46,11 +45,9 @@ export default function Login() {
   } = useForm<LoginInputs>()
 
   const onSubmit: SubmitHandler<LoginInputs> = async submitHandlerData => {
-    console.log(submitHandlerData)
     const supabase = initializeSupabase()
 
     if (!supabase) {
-      console.log('no database')
       setFormError('Error connecting to server')
       return
     }
@@ -64,7 +61,7 @@ export default function Login() {
       console.error(error.message)
     } else {
       data?.session?.access_token && setToken(data.session.access_token)
-      console.log('user "data":', data)
+      redirect('/')
     }
   }
 
