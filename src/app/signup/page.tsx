@@ -4,6 +4,8 @@ import Link from 'next/link'
 import React, { useContext, useEffect, useState } from 'react'
 import { useForm, SubmitHandler } from "react-hook-form"
 import { useAuth } from '../Context/auth'
+import Image from 'next/image'
+import { redirect } from 'next/navigation'
 
 type SignupInputs = {
     email: string
@@ -15,6 +17,8 @@ type SignupInputs = {
 
 export default function Signup() {
     const [formError, setFormError] = useState<false | string>(false)
+    const [showPassword, setShowPassword] = useState(false)
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
     const { setToken } = useAuth()
 
@@ -57,8 +61,10 @@ export default function Signup() {
             setFormError('Error creating user')
             console.error(error.message)
         } else {
-            data?.session?.access_token && setToken(data.session.access_token)
-            console.log('user "data":', data)
+            if (data?.session?.access_token) {
+                setToken(data.session.access_token)
+                redirect('/')
+            }
         }
     }
 
@@ -71,7 +77,7 @@ export default function Signup() {
                 <div className="mt-10">
                     <p className='text-red-500 text-center text-2xl'>{formError}</p>
                     <form className="px-10" onSubmit={handleSubmit(onSubmit)}>
-                        <div className="mt-2">
+                        <div>
                             <div className="flex my-3 items-center justify-between bg-zinc-100 rounded-lg  ">
                                 <input type="text" placeholder="First Name" id="firstNameInput"
                                     className="w-full text-neutral-600 placeholder:text-neutral-600 p-4 bg-transparent outline-none"
@@ -80,7 +86,7 @@ export default function Signup() {
                             </div>
                             <p className='text-red-500'>{errors?.firstName?.message}</p>
                         </div>
-                        <div className="mt-2">
+                        <div>
                             <div className="flex my-3 items-center justify-between bg-zinc-100 rounded-lg  ">
                                 <input type="text" placeholder="Last Name" id="lastNameInput"
                                     className="w-full text-neutral-600 placeholder:text-neutral-600 p-4 bg-transparent outline-none"
@@ -89,7 +95,7 @@ export default function Signup() {
                             </div>
                             <p className='text-red-500'>{errors?.lastName?.message}</p>
                         </div>
-                        <div className="mt-2">
+                        <div>
                             <div className="flex my-3 items-center justify-between bg-zinc-100 rounded-lg  ">
                                 <input type="text" placeholder="Email" id="emailInput"
                                     className="w-full text-neutral-600 placeholder:text-neutral-600 p-4 bg-transparent outline-none"
@@ -98,21 +104,23 @@ export default function Signup() {
                             </div>
                             <p className='text-red-500'>{errors?.email?.message}</p>
                         </div>
-                        <div className="mt-6">
+                        <div>
                             <div className="flex my-3 items-center justify-between bg-zinc-100 rounded-lg  ">
-                                <input type="password" aria-label="Password" placeholder="Password" id=""
+                                <input type={showPassword ? 'text': 'password'} aria-label="Password" placeholder="Password" id=""
                                     className="w-full text-neutral-600 placeholder:text-neutral-600 p-4 bg-transparent outline-none"
                                     {...register("password", { required: 'Please provide a password' })}
                                 />
+                                <Image className="mr-2" onClick={() => setShowPassword(prev => !prev)} src={showPassword ? '/images/svg/hide-icon.svg' : '/images/svg/show-icon.svg'} width={30} height={30} alt={showPassword ? 'Hide password icon' : 'Show password icon'} />
                             </div>
                             <p className='text-red-500'>{errors?.password?.message}</p>
                         </div>
-                        <div className="mt-6">
+                        <div>
                             <div className="flex my-3 items-center justify-between bg-zinc-100 rounded-lg  ">
-                                <input type="password" aria-label="Confirm Password" placeholder="Confirm password" id="confirmPassword"
+                                <input type={showConfirmPassword ? 'text': 'password'} aria-label="Confirm Password" placeholder="Confirm password" id="confirmPassword"
                                     className="w-full text-neutral-600 placeholder:text-neutral-600 p-4 bg-transparent outline-none"
                                     {...register("confirmPassword", { required: 'Please confirm your password' })}
                                 />
+                                <Image className="mr-2" onClick={() => setShowConfirmPassword(prev => !prev)} src={showConfirmPassword ? '/images/svg/hide-icon.svg' : '/images/svg/show-icon.svg'} width={30} height={30} alt={showConfirmPassword ? 'Hide password icon' : 'Show password icon'} />
                             </div>
                             <p className='text-red-500'>{errors?.confirmPassword?.message}</p>
                         </div>

@@ -1,9 +1,10 @@
 'use client'
 import { initializeSupabase } from '@/supabase/init'
 import Link from 'next/link'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useForm, SubmitHandler } from "react-hook-form"
 import { useAuth } from '../Context/auth'
+import { redirect, useSearchParams } from 'next/navigation'
 
 type LoginInputs = {
   email: string
@@ -13,7 +14,29 @@ type LoginInputs = {
 export default function Login() {
   const [formError, setFormError] = useState<false | string>(false)
 
-  const { setToken } = useAuth()
+  const { setToken, setFirstName, setLastName, setEmail } = useAuth()
+
+  const searchParams = useSearchParams()
+  const accessTokenParam = searchParams.get('access_token')
+  // const expiresInParam = searchParams.get('expires_in')
+  // const refreshTokenParam = searchParams.get('refresh_token')
+
+
+  async function asyncLoginFunction() {
+    if (accessTokenParam) setToken(accessTokenParam)
+    const supabase = initializeSupabase()
+    if (!supabase) return
+    const { data: { user } } = await supabase.auth.getUser()
+    console.log('user fetched', user)
+    const identityData = user?.identities?.[0]?.identity_data
+    if (identityData) {
+      setEmail(identityData.email)
+      setFirstName(identityData.firstName)
+      setLastName(identityData.lastName)
+    }
+    // redirect('/')
+  }
+  if (accessTokenParam) asyncLoginFunction()
 
   const {
     register,
@@ -37,7 +60,7 @@ export default function Login() {
     })
 
     if (error) {
-      setFormError('Error creating user')
+      setFormError(error.message)
       console.error(error.message)
     } else {
       data?.session?.access_token && setToken(data.session.access_token)
@@ -66,6 +89,7 @@ export default function Login() {
                   {...register("password", { required: 'Please provide a password' })}
                 />
               </div>
+              {formError ? <p className='text-red-500'>{formError}</p> : <></>}
             </div>
             <button
               className="bg-indigo-900 rounded-lg shadow text-center text-white text-base font-semibold w-full py-3 mt-9">Login
@@ -79,7 +103,7 @@ export default function Login() {
           </div>
           <Link href="/signup">
             <button
-              className="border border-indigo-900 rounded-lg text-center text-indigo-900 bg-white text-base font-semibold w-full py-3 mt-9">Signup
+              className="border border-indigo-900 rounded-lg text-center text-indigo-900 bg-white text-base font-semibold w-full py-3 mt-9">Doesn't have an account? Signup
               now</button>
           </Link>
         </div>
