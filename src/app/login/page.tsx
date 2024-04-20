@@ -4,7 +4,7 @@ import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
 import { useForm, SubmitHandler } from "react-hook-form"
 import { useAuth } from '../Context/auth'
-import { redirect, useSearchParams } from 'next/navigation'
+import { redirect, useSearchParams, useRouter } from 'next/navigation'
 
 type LoginInputs = {
   email: string
@@ -15,6 +15,7 @@ export default function Login() {
   const [formError, setFormError] = useState<false | string>(false)
 
   const { setToken, setFirstName, setLastName, setEmail } = useAuth()
+  const router = useRouter()
 
   const searchParams = useSearchParams()
   const accessTokenParam = searchParams.get('access_token')
@@ -33,7 +34,7 @@ export default function Login() {
       setFirstName(identityData.firstName)
       setLastName(identityData.lastName)
     }
-    redirect('/')
+    router.push("/")
   }
   if (accessTokenParam) asyncLoginFunction()
 
@@ -61,7 +62,7 @@ export default function Login() {
       console.error(error.message)
     } else {
       data?.session?.access_token && setToken(data.session.access_token)
-      redirect('/')
+      router.push("/")
     }
   }
 

@@ -13,7 +13,7 @@ type LoginInputs = {
 
 export default function Create() {
     const [formError, setFormError] = useState<false | string>(false)
-    const [messageSuccess, setMessageSuccess] = useState(false)
+    const [messageSuccess, setMessageSuccess] = useState<string | undefined>()
 
     const { } = useAuth()
 
@@ -33,19 +33,39 @@ export default function Create() {
         }
 
         console.log('submitHandlerData', submitHandlerData)
-        return
+
+        // const { data: tableExistsData, error: tableExistsError } = await supabase
+        //     .rpc('table_exists', { table_name: submitHandlerData.type })
+        const { title, type } = submitHandlerData
 
         const { error } = await supabase
-            .from('countries')
-            .insert({ id: 1, name: 'Denmark' })
+            .from(type)
+            .insert({ title })
 
         if (error) {
             setFormError(error.message)
             console.error(error.message)
         } else {
-            setMessageSuccess(true)
+            setMessageSuccess(`Media ${title} was created in ${type}`)
+            setTimeout(() => {
+                setMessageSuccess(undefined)
+            }, 3000);
         }
     }
+
+    if (messageSuccess) return (
+        <div className="bg-black p-6  md:mx-auto">
+            <svg viewBox="0 0 24 24" className="text-[#525252] w-16 h-16 mx-auto my-6">
+                <path fill="#FFF"
+                    d="M12,0A12,12,0,1,0,24,12,12.014,12.014,0,0,0,12,0Zm6.927,8.2-6.845,9.289a1.011,1.011,0,0,1-1.43.188L5.764,13.769a1,1,0,1,1,1.25-1.562l4.076,3.261,6.227-8.451A1,1,0,1,1,18.927,8.2Z">
+                </path>
+            </svg>
+            <div className="text-center">
+                <h3 className="md:text-2xl text-base text-gray-200 font-semibold text-center">{messageSuccess}</h3>
+                <p className="text-gray-200 my-2">You can now start tracking it in the main page.</p>
+            </div>
+        </div>
+    )
 
     return (
         <div className="max-w-xl container mx-auto ">
@@ -54,7 +74,7 @@ export default function Create() {
                 <div className="mt-10">
                     <form className="px-10" onSubmit={handleSubmit(onSubmit)}>
                         <div className="mt-2">
-                            <div className="flex my-3 items-center justify-between bg-zinc-100 rounded-lg  ">
+                            <div className="flex my-3 items-center justify-between bg-zinc-100 rounded-lg">
                                 <input type="text" placeholder="Title" id="titleInput"
                                     className="w-full text-neutral-600 placeholder:text-neutral-600 p-4 bg-transparent outline-none"
                                     {...register("title", { required: 'Please provide an title' })}
@@ -65,7 +85,7 @@ export default function Create() {
                             <h3>Please select a type</h3>
                             <div>
                                 <label htmlFor="movieRadioButton">
-                                    <input type="radio" aria-label="Movie" placeholder="Type" id="movieRadioButton" value="movie"
+                                    <input type="radio" aria-label="Movie" placeholder="Type" id="movieRadioButton" value="movies"
                                         className="text-neutral-600 placeholder:text-neutral-600 p-4 bg-transparent outline-none"
                                         {...register("type", { required: 'Please provide a type' })}
                                     />
@@ -83,7 +103,7 @@ export default function Create() {
                             </div>
                             <div>
                                 <label htmlFor="bookRadioButton">
-                                    <input type="radio" aria-label="Book" placeholder="Type" id="bookRadioButton" value="book"
+                                    <input type="radio" aria-label="Book" placeholder="Type" id="bookRadioButton" value="books"
                                         className="text-neutral-600 placeholder:text-neutral-600 p-4 bg-transparent outline-none"
                                         {...register("type", { required: 'Please provide a type' })}
                                     />
