@@ -10,6 +10,8 @@ interface AuthContextType {
   setLastName: React.Dispatch<React.SetStateAction<string | undefined>>
   email: string | undefined
   setEmail: React.Dispatch<React.SetStateAction<string | undefined>>
+  userId: string | undefined
+  setUserId: React.Dispatch<React.SetStateAction<string | undefined>>
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -19,9 +21,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [firstName, setFirstName] = useState<string | undefined>(undefined)
   const [lastName, setLastName] = useState<string | undefined>(undefined)
   const [email, setEmail] = useState<string | undefined>(undefined)
+  const [userId, setUserId] = useState<string | undefined>(undefined)
 
   return (
-    <AuthContext.Provider value={{ token, setToken, firstName, setFirstName, lastName, setLastName, email, setEmail }}>
+    <AuthContext.Provider value={{ token, setToken, firstName, setFirstName, lastName, setLastName, email, setEmail, userId, setUserId }}>
       {children}
     </AuthContext.Provider>
   )

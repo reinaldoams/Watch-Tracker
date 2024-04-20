@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react'
 import { useForm, SubmitHandler } from "react-hook-form"
 import { useAuth } from '../Context/auth'
 import { redirect, useSearchParams, useRouter } from 'next/navigation'
+import useLogin from '@/hooks/useLogin'
 
 type LoginInputs = {
   email: string
@@ -14,7 +15,8 @@ type LoginInputs = {
 export default function Login() {
   const [formError, setFormError] = useState<false | string>(false)
 
-  const { setToken, setFirstName, setLastName, setEmail } = useAuth()
+  const { setToken, setFirstName, setLastName, setEmail, setUserId } = useAuth()
+  const { setUserContextValues, loginUser } = useLogin()
   const router = useRouter()
 
   const searchParams = useSearchParams()
@@ -24,16 +26,10 @@ export default function Login() {
 
 
   async function asyncLoginFunction() {
-    if (accessTokenParam) setToken(accessTokenParam)
     const supabase = initializeSupabase()
     if (!supabase) return
-    const { data: { user } } = await supabase.auth.getUser()
-    const identityData = user?.identities?.[0]?.identity_data
-    if (identityData) {
-      setEmail(identityData.email)
-      setFirstName(identityData.firstName)
-      setLastName(identityData.lastName)
-    }
+    const { data } = await supabase.auth.getUser()
+
     router.push("/")
   }
   if (accessTokenParam) asyncLoginFunction()
@@ -46,22 +42,13 @@ export default function Login() {
   } = useForm<LoginInputs>()
 
   const onSubmit: SubmitHandler<LoginInputs> = async submitHandlerData => {
-    const supabase = initializeSupabase()
-
-    if (!supabase) {
-      setFormError('Error connecting to server')
-      return
-    }
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: submitHandlerData.email,
-      password: submitHandlerData.password,
-    })
+    const { error, data } = await loginUser(submitHandlerData.email, submitHandlerData.password)
 
     if (error) {
       setFormError(error.message)
       console.error(error.message)
-    } else {
-      data?.session?.access_token && setToken(data.session.access_token)
+    } else if (data?.session?.access_token) {
+      setUserContextValues(data, data.session.access_token, setToken, setFirstName, setLastName, setEmail, setUserId)
       router.push("/")
     }
   }

@@ -6,6 +6,7 @@ import { useForm, SubmitHandler } from "react-hook-form"
 import { useAuth } from '../Context/auth'
 import Image from 'next/image'
 import { redirect } from 'next/navigation'
+import useLogin from '@/hooks/useLogin'
 
 type SignupInputs = {
     email: string
@@ -20,7 +21,8 @@ export default function Signup() {
     const [showPassword, setShowPassword] = useState(false)
     const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
-    const { setToken } = useAuth()
+    const { setToken, setEmail, setFirstName, setLastName, setUserId } = useAuth()
+    const { signUpUser, setUserContextValues } = useLogin()
 
     const {
         register,
@@ -37,34 +39,17 @@ export default function Signup() {
             return
         }
 
-        const supabase = initializeSupabase()
-
-        if (!supabase) {
-            console.log('no database')
-            setFormError('Error connecting to server')
-            return
-        }
-
-        const { data, error } = await supabase.auth.signUp({
-            email: submitHandlerData.email,
-            password: submitHandlerData.password,
-            options: {
-                data: {
-                    firstName: submitHandlerData.firstName,
-                    lastName: submitHandlerData.lastName,
-                }
-            }
-            
+        const { data, error } = await signUpUser(submitHandlerData.email, submitHandlerData.password, {
+            firstName: submitHandlerData.firstName,
+            lastName: submitHandlerData.lastName
         })
 
         if (error) {
             setFormError('Error creating user')
             console.error(error.message)
-        } else {
-            if (data?.session?.access_token) {
-                setToken(data.session.access_token)
-                redirect('/')
-            }
+        } else if (data?.session?.access_token) {
+            setUserContextValues(data, data.session.access_token, setToken, setFirstName, setLastName, setEmail, setUserId)
+            redirect('/')
         }
     }
 
@@ -106,7 +91,7 @@ export default function Signup() {
                         </div>
                         <div>
                             <div className="flex my-3 items-center justify-between bg-zinc-100 rounded-lg  ">
-                                <input type={showPassword ? 'text': 'password'} aria-label="Password" placeholder="Password" id=""
+                                <input type={showPassword ? 'text' : 'password'} aria-label="Password" placeholder="Password" id=""
                                     className="w-full text-neutral-600 placeholder:text-neutral-600 p-4 bg-transparent outline-none"
                                     {...register("password", { required: 'Please provide a password' })}
                                 />
@@ -116,7 +101,7 @@ export default function Signup() {
                         </div>
                         <div>
                             <div className="flex my-3 items-center justify-between bg-zinc-100 rounded-lg  ">
-                                <input type={showConfirmPassword ? 'text': 'password'} aria-label="Confirm Password" placeholder="Confirm password" id="confirmPassword"
+                                <input type={showConfirmPassword ? 'text' : 'password'} aria-label="Confirm Password" placeholder="Confirm password" id="confirmPassword"
                                     className="w-full text-neutral-600 placeholder:text-neutral-600 p-4 bg-transparent outline-none"
                                     {...register("confirmPassword", { required: 'Please confirm your password' })}
                                 />

@@ -20,11 +20,20 @@ export default function Create() {
     const {
         register,
         handleSubmit,
-        watch,
+        reset,
         formState: { errors },
     } = useForm<LoginInputs>()
 
+    async function seeUser() {
+        const supabase = initializeSupabase()
+
+        const { data: { user } } = await supabase.auth.getUser()
+
+        console.log('user', user)
+    }
+    seeUser()
     const onSubmit: SubmitHandler<LoginInputs> = async submitHandlerData => {
+        setFormError(false)
         const supabase = initializeSupabase()
 
         if (!supabase) {
@@ -32,21 +41,20 @@ export default function Create() {
             return
         }
 
-        console.log('submitHandlerData', submitHandlerData)
+        const { data: { user } } = await supabase.auth.getUser()
 
-        // const { data: tableExistsData, error: tableExistsError } = await supabase
-        //     .rpc('table_exists', { table_name: submitHandlerData.type })
         const { title, type } = submitHandlerData
 
-        const { error } = await supabase
+        const { error } = user ? await supabase
             .from(type)
-            .insert({ title })
+            .insert({ title, user_id: user.id }) : { error: { message: 'User not found' } }
 
         if (error) {
             setFormError(error.message)
             console.error(error.message)
         } else {
-            setMessageSuccess(`Media ${title} was created in ${type}`)
+            setMessageSuccess(`Media "${title}" was created in ${type}`)
+            reset()
             setTimeout(() => {
                 setMessageSuccess(undefined)
             }, 3000);

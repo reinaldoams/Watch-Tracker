@@ -3,7 +3,7 @@ import MediaList from "./Components/MediaList";
 export default function Home() {
   return (
     <>
-      <MediaList />
+      <MediaList type="movies" />
     </>
   );
 }
